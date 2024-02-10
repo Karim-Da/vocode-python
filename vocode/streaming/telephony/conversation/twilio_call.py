@@ -8,7 +8,7 @@ from typing import Optional
 from vocode import getenv
 from vocode.streaming.agent.factory import AgentFactory
 from vocode.streaming.models.agent import AgentConfig
-from vocode.streaming.models.events import PhoneCallConnectedEvent
+from vocode.streaming.models.events import PhoneCallConnectedEvent, RecordingEvent
 
 from vocode.streaming.models.telephony import TwilioConfig
 from vocode.streaming.output_device.twilio_output_device import TwilioOutputDevice
@@ -99,6 +99,10 @@ class TwilioCall(Call[TwilioOutputDevice]):
                 twilio_call_ref.recordings.create(**recordings_create_params)
                 if recordings_create_params
                 else twilio_call_ref.recordings.create()
+            )
+            recording_url = f"https://api.twilio.com/2010-04-01/Accounts/{recording.account_sid}/Recordings/{recording.sid}.json"
+            self.events_manager.publish_event(
+                RecordingEvent(recording_url=recording_url, conversation_id=self.id)
             )
             self.logger.info(f"Recording: {recording.sid}")
 
